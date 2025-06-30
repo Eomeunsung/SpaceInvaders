@@ -19,16 +19,35 @@ for y in range(3):
         alien.x = 70 + 50 * x
         alien.y = 100 + 70 * y
 
+
+
 while True:
-    print("Update")
+
+    #print("Update")
     for event in pygame.event.get():
+        print(event)
         if event.type == pygame.QUIT:
             print("Shutdown")
             pygame.quit()
             exit()
             break
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                fighter.direction = -1
+            if event.key == pygame.K_RIGHT:
+                fighter.direction = +1
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_LEFT:
+                fighter.direction = 0
+            if event.key == pygame.K_RIGHT:
+                fighter.direction = 0
+            # if event.key in [pygame.K_UP, pygame.K_DOWN]:
+            #     direction = 0
 
-    print("Render")
+    delta_seconds = clock.tick(FPS) / 1000 ## FPS 만족하게끔 시간 딜레이
+    fighter.update(delta_seconds)
+
+    #print("Render")
     surface.fill((0, 0, 0)) ##rgb 블랙색 나타냄 메서드 안에 가로를 튜플 이라고 함
     fighter.draw(surface)
     #surface.blit(scale_up_alien_image, (alien_x, alien_y))
@@ -37,4 +56,4 @@ while True:
         alien.draw(surface)
 
     pygame.display.update()
-    clock.tick(FPS)
+    # clock.tick(FPS)
