@@ -26,16 +26,18 @@ while True:
     #print("Update")
     for event in pygame.event.get():
         print(event)
-        if event.type == pygame.QUIT:
+        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             print("Shutdown")
             pygame.quit()
             exit()
             break
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
                 fighter.direction = -1
             if event.key == pygame.K_RIGHT:
                 fighter.direction = +1
+
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
                 fighter.direction = 0
@@ -46,6 +48,16 @@ while True:
 
     delta_seconds = clock.tick(FPS) / 1000 ## FPS 만족하게끔 시간 딜레이
     fighter.update(delta_seconds)
+
+    for alien in aliens:
+        alien.update(delta_seconds)
+
+    if Alien.should_change_direction:
+        Alien.should_change_direction = False
+
+        for alien in aliens:
+            alien.direction *= -1
+            alien.move(0, 50)
 
     #print("Render")
     surface.fill((0, 0, 0)) ##rgb 블랙색 나타냄 메서드 안에 가로를 튜플 이라고 함
