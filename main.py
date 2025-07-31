@@ -1,8 +1,10 @@
 import pygame
 
 from objects.beam import Beam
+from objects.explosion import Explosion
 from objects.fighter import Fighter
 from objects.alien import Alien
+from objects.explosion import Explosion
 from constants import *
 
 print("Startup")
@@ -23,6 +25,8 @@ for y in range(3):
         alien.y = 100 + 70 * y
 
 bombs = []
+
+explosions = []
 
 
 while True:
@@ -61,6 +65,18 @@ while True:
         beam.update(delta_seconds)
         if beam.y < 0:
             beam = None
+        else:
+            alien = beam.check_collision(aliens)
+            if alien:
+                explosions.append(Explosion(alien.rect))
+                aliens.remove(alien)
+                beam = None
+
+            # for alien in aliens:
+            #     if beam.rect.colliderect(alien.rect):
+            #         aliens.remove(alien)
+            #         beam = None
+            #         break
 
     for alien in aliens:
         alien.update(delta_seconds)
@@ -69,11 +85,30 @@ while True:
         if bomb:
             bombs.append(bomb)
 
+        if alien.check_collision([fighter]):
+            explosions.append(Explosion(fighter.rect))
+            explosions.append(Explosion(alien.rect))
+            aliens.remove(alien)
+            print("Game Over")
+            break
+
     for bomb in bombs:
         bomb.update(delta_seconds)
+
         if SCREEN_HEIGHT < bomb.y:
             bombs.remove(bomb)
+        else:
+            if bomb.check_collision([fighter]):
+                explosions.append(Explosion(fighter.rect))
+                bombs.remove(bomb)
+                print("Game Over")
+                break
 
+
+    for explosion in explosions:
+        explosion.update(delta_seconds)
+        if explosion.is_finished():
+            explosions.remove(explosion)
 
     if Alien.should_change_direction:
         Alien.should_change_direction = False
@@ -95,5 +130,9 @@ while True:
 
     for bomb in bombs:
         bomb.draw(surface)
+
+    for explosion in explosions:
+        explosion.draw(surface)
+
     pygame.display.update()
     # clock.tick(FPS)
