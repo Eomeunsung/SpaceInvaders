@@ -9,12 +9,11 @@ from constants import *
 
 print("Startup")
 pygame.init()
-pygame.key.set_repeat(500, 500)
+pygame.key.set_repeat(500, 300)
 surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) # 화면 이미지 가로 640 세로 480
 clock = pygame.time.Clock()
 
 fighter = Fighter()
-beam = None
 
 aliens = []
 for y in range(3):
@@ -28,6 +27,15 @@ bombs = []
 
 explosions = []
 
+beams = []
+
+shoot_sound = pygame.mixer.Sound("assets/sounds/shoot.wav")
+invaderkilled_sound = pygame.mixer.Sound("assets/sounds/invaderkilled.wav")
+explosion_sound = pygame.mixer.Sound("assets/sounds/explosion.wav")
+
+shoot_sound.set_volume(0.3)
+invaderkilled_sound.set_volume(0.3)
+explosion_sound.set_volume(0.3)
 
 while True:
 
@@ -46,8 +54,11 @@ while True:
             if event.key == pygame.K_RIGHT:
                 fighter.direction_x = +1
             if event.key == pygame.K_SPACE:
-                if beam is None:
+                if len(beams) < 2:
                     beam = Beam(fighter.x + fighter.image.get_width()/2 ,fighter.y)
+                    beams.append(beam)
+                    shoot_sound.play()
+
 
 
         if event.type == pygame.KEYUP:
@@ -61,16 +72,17 @@ while True:
     delta_seconds = clock.tick(FPS) / 1000 ## FPS 만족하게끔 시간 딜레이
     fighter.update(delta_seconds)
 
-    if beam:
+    for beam in beams:
         beam.update(delta_seconds)
         if beam.y < 0:
-            beam = None
+            beams.remove(beam)
         else:
             alien = beam.check_collision(aliens)
             if alien:
                 explosions.append(Explosion(alien.rect))
                 aliens.remove(alien)
-                beam = None
+                beams.remove(beam)
+                invaderkilled_sound.play()
 
             # for alien in aliens:
             #     if beam.rect.colliderect(alien.rect):
@@ -89,6 +101,7 @@ while True:
             explosions.append(Explosion(fighter.rect))
             explosions.append(Explosion(alien.rect))
             aliens.remove(alien)
+            explosion_sound.play()
             print("Game Over")
             break
 
@@ -101,6 +114,7 @@ while True:
             if bomb.check_collision([fighter]):
                 explosions.append(Explosion(fighter.rect))
                 bombs.remove(bomb)
+                explosion_sound.play()
                 print("Game Over")
                 break
 
@@ -121,7 +135,7 @@ while True:
     surface.fill((0, 0, 0)) ##rgb 블랙색 나타냄 메서드 안에 가로를 튜플 이라고 함
     fighter.draw(surface)
 
-    if beam:
+    for beam in beams:
         beam.draw(surface)
     #surface.blit(scale_up_alien_image, (alien_x, alien_y))
 
